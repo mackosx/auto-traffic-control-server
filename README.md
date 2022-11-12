@@ -11,4 +11,5 @@ To start the server, run `npm start`.
 - [x] Follow the set up tutorial
 - [ ] Figure out how to generate a flight path
 - [ ] Path finding! Dijkstra's, A\*, something else?
+- [ ] How to avoid collisions...
 - [ ] Tests?

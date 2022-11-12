@@ -11,11 +11,24 @@ import {
   GetMapRequest,
   Airport,
   Node,
+  AirplaneServiceClient,
+  UpdateFlightPlanRequest,
+  UpdateFlightPlanError,
 } from "auto-traffic-control";
 
-function generateFlightPlan(id: string, nextNode: Node, destAirpot: Airport) {}
+function generateFlightPlan(
+  id: string,
+  start: Node,
+  destAirport: Airport
+): Node[] {
+  return [];
+}
 
-function updateFlightPlan(event: AirplaneDetected) {
+function updateFlightPlan(
+  event: AirplaneDetected,
+  mapService: MapServiceClient,
+  airplaneService: AirplaneServiceClient
+) {
   const airplane = event.getAirplane();
   if (airplane == undefined) {
     throw new Error("Received AirplaneDetected event without an airplane");
@@ -27,26 +40,42 @@ function updateFlightPlan(event: AirplaneDetected) {
   if (!nextNode) {
     return;
   }
-  // TODO: inject the map service, instead of creating a new instance here
-  const mapService = new MapServiceClient("localhost:4747", getCredentials());
 
   mapService.getMap(new GetMapRequest(), (err, response) => {
     if (err != null) {
       throw err;
     }
-    if (!response.hasMap()) {
-      return;
-    }
     const map = response.getMap();
     const airports = map?.getAirportsList();
-    if (airports) {
-      const matchingAirport = airports.find(
-        (airport) => airport.getTag() == airplane.getTag()
-      );
-      if (matchingAirport) {
-        generateFlightPlan(id, nextNode, matchingAirport);
-      }
+    if (!airports) {
+      return;
     }
+    const matchingAirport = airports.find(
+      (airport) => airport.getTag() == airplane.getTag()
+    );
+    if (!matchingAirport) {
+      console.log("No matching airport for airplane " + airplane);
+      return;
+    }
+    const newFlightPlan = generateFlightPlan(id, nextNode, matchingAirport);
+    airplaneService.updateFlightPlan(
+      new UpdateFlightPlanRequest()
+        .setId(airplane.getId())
+        .setFlightPlanList(newFlightPlan),
+      (err, response) => {
+        if (err != null) {
+          throw err;
+        }
+        // Log any validation errors with the flight plan
+        const error = response.getError();
+        if (error) {
+          const errorsList = error.getErrorsList();
+          console.log(errorsList);
+          return;
+        }
+        console.log("Updated " + airplane + "'s flight plan.");
+      }
+    );
   });
 
   console.log(`Detected airplane ${id} heading towards ${nextNode}.`);
@@ -59,17 +88,19 @@ function exit(event: GameStopped): void {
   console.log(`Game stopped! Score: ${score}`);
   process.exit();
 }
-function processMessage(streamResponse: StreamResponse): void {
-  const airplaneDetected = streamResponse.getAirplaneDetected();
-  if (airplaneDetected != undefined) {
-    updateFlightPlan(airplaneDetected);
-  }
+const processMessage =
+  (mapService: MapServiceClient, airplaneService: AirplaneServiceClient) =>
+  (streamResponse: StreamResponse) => {
+    const airplaneDetected = streamResponse.getAirplaneDetected();
+    if (airplaneDetected != undefined) {
+      updateFlightPlan(airplaneDetected, mapService, airplaneService);
+    }
 
-  const gameStopped = streamResponse.getGameStopped();
-  if (gameStopped != undefined) {
-    exit(gameStopped);
-  }
-}
+    const gameStopped = streamResponse.getGameStopped();
+    if (gameStopped != undefined) {
+      exit(gameStopped);
+    }
+  };
 
 function streamClosed() {
   console.log("Event stream closed.");
@@ -80,9 +111,14 @@ function subscribeToEvents(): void {
     "localhost:4747",
     getCredentials()
   );
+  const mapService = new MapServiceClient("localhost:4747", getCredentials());
+  const airplaneService = new AirplaneServiceClient(
+    "localhost:4747",
+    getCredentials()
+  );
 
   const stream = eventService.stream(new StreamRequest());
-  stream.on("data", processMessage);
+  stream.on("data", processMessage(mapService, airplaneService));
   stream.on("end", streamClosed);
 }
 
