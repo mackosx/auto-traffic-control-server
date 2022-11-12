@@ -13,15 +13,72 @@ import {
   Node,
   AirplaneServiceClient,
   UpdateFlightPlanRequest,
-  UpdateFlightPlanError,
+  Map,
+  Airplane,
 } from "auto-traffic-control";
+import { range } from "./util";
+
+/**
+ * Converts a set of coordinates into the routing grid node.
+ * @param map Current map
+ * @param longitude Longitude of the node to get
+ * @param latitude Latitude of the node to get
+ * @returns A reference to the node at the given long/lat
+ */
+function getNodeAt(map: Map, longitude: number, latitude: number): Node {
+  const x = longitude + map.getWidth() / 2;
+  const y = latitude + map.getHeight() / 2;
+  const index = y * map.getWidth() + x;
+  return map.getRoutingGridList()[index];
+}
+
+/**
+ *
+ * @param node Node we are getting the neighbours of
+ * @param map Map to look for nodes in
+ * @returns A list of all nodes surrounding the current node.
+ */
+function getNeighbours(node: Node, map: Map): Node[] {
+  console.log(map.getHeight(), map.getWidth());
+  const width_range = range(
+    Math.min((map.getWidth() - 1) / 2, node.getLongitude() + 1),
+    Math.max(-1 * ((map.getWidth() - 1) / 2), node.getLongitude() - 1)
+  );
+  const height_range = range(
+    Math.min((map.getHeight() - 1) / 2, node.getLatitude() + 1),
+    Math.max(-1 * ((map.getHeight() - 1) / 2), node.getLatitude() - 1)
+  );
+  const neighbours: Node[] = [];
+  height_range.forEach((y) => {
+    width_range.forEach((x) => {
+      if (x !== node.getLongitude() && y !== node.getLatitude()) {
+        neighbours.push(getNodeAt(map, x, y));
+      }
+    });
+  });
+  return neighbours;
+}
 
 function generateFlightPlan(
   id: string,
   start: Node,
-  destAirport: Airport
+  destAirport: Airport,
+  map: Map
 ): Node[] {
-  return [];
+  // Testing with sending any nodes
+  return getNeighbours(start, map).filter((node) => !node.getRestricted());
+}
+
+function getAirportForAirplane(map: Map, airplane: Airplane): Airport {
+  const airports = map.getAirportsList();
+  const matchingAirport = airports.find(
+    (airport) => airport.getTag() == airplane.getTag()
+  );
+  if (!matchingAirport) {
+    throw new Error("No matching airport for airplane " + airplane);
+  }
+
+  return matchingAirport;
 }
 
 function updateFlightPlan(
@@ -46,18 +103,12 @@ function updateFlightPlan(
       throw err;
     }
     const map = response.getMap();
-    const airports = map?.getAirportsList();
-    if (!airports) {
+    if (!map) {
+      console.error("No map...");
       return;
     }
-    const matchingAirport = airports.find(
-      (airport) => airport.getTag() == airplane.getTag()
-    );
-    if (!matchingAirport) {
-      console.log("No matching airport for airplane " + airplane);
-      return;
-    }
-    const newFlightPlan = generateFlightPlan(id, nextNode, matchingAirport);
+    const airport = getAirportForAirplane(map, airplane);
+    const newFlightPlan = generateFlightPlan(id, nextNode, airport, map);
     airplaneService.updateFlightPlan(
       new UpdateFlightPlanRequest()
         .setId(airplane.getId())
@@ -70,7 +121,7 @@ function updateFlightPlan(
         const error = response.getError();
         if (error) {
           const errorsList = error.getErrorsList();
-          console.log(errorsList);
+          console.log("Flight plan invalid. Errors: " + errorsList);
           return;
         }
         console.log("Updated " + airplane + "'s flight plan.");
