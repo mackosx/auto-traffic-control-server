@@ -100,7 +100,7 @@ export function getAirportForAirplane(map: Map, airplane: Airplane): Airport {
 export function nodeStr(node: Node) {
   return `(${node.getLongitude()}, ${node.getLatitude()})`;
 }
-
+// TODO: function to print out a debug map to see where the pathing is going
 export function nodeListStr(nodes: Node[]) {
   return nodes.map(nodeStr).join(" -> ");
 }
