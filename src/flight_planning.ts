@@ -11,7 +11,7 @@ import {
 } from "auto-traffic-control";
 import { bfs, filterNeighbourInDirection, getNeighbours } from "./pathing";
 import { airplaneService, mapService } from "./services";
-import { direction, getAirportForAirplane } from "./util";
+import { direction, getAirportForAirplane, nodeListStr } from "./util";
 import { promisify } from "util";
 
 export async function updateFlightPlan(event: AirplaneDetected) {
@@ -33,7 +33,12 @@ export async function updateFlightPlan(event: AirplaneDetected) {
   }
   const airport = getAirportForAirplane(map, airplane);
   const newFlightPlan = await generateFlightPlan(airplane, airport, map);
-  console.log("New flight plan acquired " + newFlightPlan + " for " + airplane);
+  console.log(
+    "New flight plan acquired " +
+      nodeListStr(newFlightPlan) +
+      " for " +
+      airplane
+  );
 
   airplaneService.updateFlightPlan(
     new UpdateFlightPlanRequest()

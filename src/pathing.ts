@@ -1,4 +1,5 @@
 import { Node, Map } from "auto-traffic-control";
+import { Queue } from "./queue";
 import { Direction, range, unitMove, getNodeAt, nodeListStr } from "./util";
 
 export const filterNeighbourInDirection =
@@ -60,31 +61,27 @@ export function bfs(
   }
   console.log("Goal is " + goal);
   const visited = new Set<Node>();
-  const queue: Node[][] = [];
-  queue.push([start]);
+  const queue = new Queue<Node[]>();
+  queue.enqueue([start]);
   visited.add(start);
   while (queue.length > 0) {
-    const path = queue.pop();
-    if (!path) {
-      break;
-    }
+    const path = queue.dequeue();
     const node = path.at(-1);
     if (!node) {
       break;
     }
     const neighbours = getNeighbours(node);
-    neighbours.forEach((neighbour) => {
+    for (let neighbour of neighbours) {
       const currentPath = [...path, neighbour];
       if (neighbour.toString() === goal.toString()) {
         return currentPath;
       }
 
       if (!visited.has(neighbour)) {
-        console.log("Current path:", nodeListStr(currentPath));
         visited.add(neighbour);
-        queue.push(currentPath);
+        queue.enqueue(currentPath);
       }
-    });
+    }
   }
   console.error("No path to goal found.");
   return [start];
