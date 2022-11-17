@@ -117,13 +117,13 @@ export async function generateFlightPlan(
     return flightPlan;
   }
   const planeDirection = direction(currentAirplanePoint, point);
-  // Testing with sending any nodes
   const filterFromNode = filterNeighbourInDirection(planeDirection, next);
+  // TODO: Avoid all other airplanes flight plans? Breaks down pretty quickly
+  // avoid routes that intersect? Calculate point of intersection
   function neighbours(node: Node) {
     return getNeighbours(node, map);
     // .filter(filterFromNode);
   }
   const path = bfs(next, airportNode, neighbours);
-  console.log(path);
   return path;
 }
