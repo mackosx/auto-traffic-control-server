@@ -1,0 +1,6 @@
+{
+  "version": "0.2",
+  "language": "en",
+  // words - list of words to be always considered correct
+  "words": ["neighbour", "neighbours", "pathing"]
+}
