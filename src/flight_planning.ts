@@ -97,13 +97,11 @@ export async function generateFlightPlan(
     console.error("No node in the flight plan to start from...");
     return flightPlan;
   }
-  // @ts-ignore
-  mapService.nodeToPointPromise = promisify<
-    NodeToPointRequest,
-    NodeToPointResponse
-  >(mapService.nodeToPoint);
-  // @ts-ignore
-  const response = await mapService.nodeToPointPromise(
+  const nodeToPointPromise = promisify<NodeToPointRequest, NodeToPointResponse>(
+    mapService.nodeToPoint
+  );
+
+  const response = await nodeToPointPromise(
     new NodeToPointRequest().setNode(next)
   );
   const point = response.getPoint();
