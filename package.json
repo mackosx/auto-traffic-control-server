@@ -13,7 +13,15 @@
   "license": "ISC",
   "dependencies": {
     "@grpc/grpc-js": "1.7.3",
-    "auto-traffic-control": "0.3.2"
+    "auto-traffic-control": "0.3.2",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "prettier": "^2.8.0"
   },
   "devDependencies": {
     "@types/node": "18.11.9",
