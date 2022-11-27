@@ -1,6 +1,6 @@
 import { Node, Map } from 'auto-traffic-control'
 import { Queue } from './queue'
-import { Direction, range, unitMove, getNodeAt, nodeListStr } from './util'
+import { Direction, range, unitMove, getNodeAt } from './util'
 
 export const filterNeighbourInDirection =
     (inDirection: Direction, origin: Node) => (node: Node) => {
@@ -71,7 +71,7 @@ export function bfs(
             break
         }
         const neighbours = getNeighbours(node)
-        for (let neighbour of neighbours) {
+        for (const neighbour of neighbours) {
             const currentPath = [...path, neighbour]
             if (neighbour.toString() === goal.toString()) {
                 return currentPath

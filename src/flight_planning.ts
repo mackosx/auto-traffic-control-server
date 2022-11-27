@@ -8,6 +8,7 @@ import {
     NodeToPointRequest,
     NodeToPointResponse,
     GetMapRequest,
+    GetMapResponse,
 } from 'auto-traffic-control'
 import { bfs, filterNeighbourInDirection, getNeighbours } from './pathing'
 import { airplaneService, mapService } from './services'
@@ -20,12 +21,10 @@ export async function updateFlightPlan(event: AirplaneDetected) {
         throw new Error('Received AirplaneDetected event without an airplane')
     }
     const next = airplane.getFlightPlanList()[0]
-    // @ts-ignore
-    mapService.getMapPromise = promisify<GetMapRequest, GetMapResponse>(
+    const getMapPromise = promisify<GetMapRequest, GetMapResponse>(
         mapService.getMap,
     )
-    // @ts-ignore
-    const response = await mapService.getMapPromise(new GetMapRequest())
+    const response = await getMapPromise(new GetMapRequest())
     const map = response.getMap()
     if (!map) {
         console.error('No map...')
