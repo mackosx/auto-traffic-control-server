@@ -40,6 +40,7 @@ export function getNeighbours(node: Node, map: Map): Node[] {
             }
         })
     })
+
     // console.log("Neighbours " + neighbours);
     return neighbours
 }
