@@ -1,5 +1,4 @@
 import { Point, Node, Map, Airplane, Airport } from 'auto-traffic-control'
-import { Logger } from './logger'
 import { MapVisualizer } from './map_visualizer'
 
 /**
@@ -133,8 +132,8 @@ export function mapDebugString(map: Map, nodes: Node[]) {
     const restrictedNodes = map
         .getRoutingGridList()
         .filter((node) => node.getRestricted())
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
+    for (let y = height - 1; y >= 0; y--) {
+        for (let x = 0; x < width; x++) {
             const index = nodes.findIndex((node) => {
                 const coordinates = getStandardizedCoordinates(
                     map,
@@ -160,14 +159,11 @@ export function mapDebugString(map: Map, nodes: Node[]) {
                 return x === coordinates.x && y === coordinates.y
             })
             if (restrictedIndex > -1) {
-                process.stdout.write('    ')
+                MapVisualizer.invalid()
             } else if (airportIndex > -1) {
                 MapVisualizer.airport()
             } else if (index > -1) {
                 MapVisualizer.path(index)
-                // process.stdout.write(
-                //     ` ${(index + 1).toString().padStart(2, ' ')} `,
-                // )
             } else {
                 MapVisualizer.empty()
             }
