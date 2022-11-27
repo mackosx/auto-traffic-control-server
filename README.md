@@ -34,10 +34,10 @@ npm start
 
 ## `TODO`
 
-- [x] Follow the set up tutorial
-- [x] Add `tsconfig.json` with strict type checking
-- [ ] Add `eslint` and `prettier`
-- [ ] Figure out how to generate a flight path
-- [ ] Path finding! Dijkstra's, A\*, something else?
-- [ ] How to avoid collisions...
-- [ ] Tests?
+-   [x] Follow the set up tutorial
+-   [x] Add `tsconfig.json` with strict type checking
+-   [x] Add `eslint` and `prettier`
+-   [ ] Figure out how to generate a flight path
+-   [ ] Path finding! Dijkstra's, A\*, something else?
+-   [ ] How to avoid collisions...
+-   [ ] Tests?
