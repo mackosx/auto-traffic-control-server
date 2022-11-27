@@ -12,8 +12,9 @@ import {
 } from 'auto-traffic-control'
 import { bfs, filterNeighbourInDirection, getNeighbours } from './pathing'
 import { airplaneService, mapService } from './services'
-import { direction, getAirportForAirplane, mapDebugString, nodeListStr } from './util'
+import { direction, getAirportForAirplane, nodeListStr } from './util'
 import { promisify } from 'util'
+import { MapVisualizer } from './logging/map_visualizer'
 
 export async function updateFlightPlan(event: AirplaneDetected) {
     const airplane = event.getAirplane()
@@ -38,7 +39,8 @@ export async function updateFlightPlan(event: AirplaneDetected) {
             ' for ' +
             airplane,
     )
-    console.log(mapDebugString(map, newFlightPlan))
+
+    MapVisualizer.visualizeFlightPlan(map, newFlightPlan)
 
     airplaneService.updateFlightPlan(
         new UpdateFlightPlanRequest()
