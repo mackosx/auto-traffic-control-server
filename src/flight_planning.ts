@@ -12,7 +12,7 @@ import {
 } from 'auto-traffic-control'
 import { bfs, filterNeighbourInDirection, getNeighbours } from './pathing'
 import { airplaneService, mapService } from './services'
-import { direction, getAirportForAirplane, nodeListStr } from './util'
+import { direction, getAirportForAirplane, mapDebugString, nodeListStr } from './util'
 import { promisify } from 'util'
 
 export async function updateFlightPlan(event: AirplaneDetected) {
@@ -24,7 +24,7 @@ export async function updateFlightPlan(event: AirplaneDetected) {
     const getMapPromise = promisify<GetMapRequest, GetMapResponse>(
         mapService.getMap,
     )
-    const response = await getMapPromise(new GetMapRequest())
+    const response = await getMapPromise.bind(mapService)(new GetMapRequest())
     const map = response.getMap()
     if (!map) {
         console.error('No map...')
@@ -38,6 +38,7 @@ export async function updateFlightPlan(event: AirplaneDetected) {
             ' for ' +
             airplane,
     )
+    console.log(mapDebugString(map, newFlightPlan))
 
     airplaneService.updateFlightPlan(
         new UpdateFlightPlanRequest()
@@ -103,7 +104,7 @@ export async function generateFlightPlan(
         NodeToPointResponse
     >(mapService.nodeToPoint)
 
-    const response = await nodeToPointPromise(
+    const response = await nodeToPointPromise.bind(mapService)(
         new NodeToPointRequest().setNode(next),
     )
     const point = response.getPoint()
@@ -120,7 +121,7 @@ export async function generateFlightPlan(
     const filterFromNode = filterNeighbourInDirection(planeDirection, next)
     // TODO: Avoid all other airplanes flight plans? Breaks down pretty quickly
     // avoid routes that intersect? Calculate point of intersection
-    function neighbours(node: Node) {
+    const neighbours = (node: Node) => {
         return getNeighbours(node, map)
         // .filter(filterFromNode);
     }
