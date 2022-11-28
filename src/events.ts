@@ -4,12 +4,13 @@ import {
     StreamResponse,
 } from 'auto-traffic-control'
 import { updateFlightPlan } from './flight_planning'
+import { Logger } from './logging/logger'
 import { eventService } from './services'
 
 function exit(event: GameStopped): void {
     const score = event.getScore()
 
-    console.log(`Game stopped! Score: ${score}`)
+    Logger.info(`Game stopped! Score: ${score}`)
     process.exit()
 }
 
@@ -26,7 +27,7 @@ function processMessage(streamResponse: StreamResponse) {
 }
 
 function streamClosed() {
-    console.log('Event stream closed.')
+    Logger.info('Event stream closed.')
 }
 
 export function subscribeToEvents(): void {

@@ -12,9 +12,10 @@ import {
 } from 'auto-traffic-control'
 import { bfs, filterNeighbourInDirection, getNeighbours } from './pathing'
 import { airplaneService, mapService } from './services'
-import { direction, getAirportForAirplane, nodeListStr } from './util'
+import { direction, getAirportForAirplane } from './util'
 import { promisify } from 'util'
 import { MapVisualizer } from './logging/map_visualizer'
+import { Logger } from './logging/logger'
 
 export async function updateFlightPlan(event: AirplaneDetected) {
     const airplane = event.getAirplane()
@@ -28,17 +29,12 @@ export async function updateFlightPlan(event: AirplaneDetected) {
     const response = await getMapPromise.bind(mapService)(new GetMapRequest())
     const map = response.getMap()
     if (!map) {
-        console.error('No map...')
+        Logger.error('No map...')
         return
     }
     const airport = getAirportForAirplane(map, airplane)
     const newFlightPlan = await generateFlightPlan(airplane, airport, map)
-    console.log(
-        'New flight plan acquired ' +
-            nodeListStr(newFlightPlan) +
-            ' for ' +
-            airplane,
-    )
+    Logger.info('New flight plan acquired:')
 
     MapVisualizer.visualizeFlightPlan(map, newFlightPlan)
 
@@ -54,13 +50,13 @@ export async function updateFlightPlan(event: AirplaneDetected) {
             const error = response.getError()
             if (error) {
                 const errorsList = error.getErrorsList()
-                console.log('Flight plan invalid. Errors: ' + errorsList)
+                Logger.error('Flight plan invalid. Errors: ' + errorsList)
                 return
             }
-            console.log('Updated ' + airplane + "'s flight plan.")
+            Logger.info('Updated ' + airplane + "'s flight plan.")
         },
     )
-    console.log(
+    Logger.info(
         `Detected airplane ${airplane.getId()} heading towards ${next}.`,
     )
 
@@ -92,13 +88,13 @@ export async function generateFlightPlan(
 ): Promise<Node[]> {
     const airportNode = destAirport.getNode()
     if (!airportNode) {
-        console.error('Airport location unknown...')
+        Logger.error('Airport location unknown...')
         return []
     }
     const flightPlan = airplane.getFlightPlanList()
     const next = flightPlan[0]
     if (!next) {
-        console.error('No node in the flight plan to start from...')
+        Logger.error('No node in the flight plan to start from...')
         return flightPlan
     }
     const nodeToPointPromise = promisify<
@@ -111,12 +107,12 @@ export async function generateFlightPlan(
     )
     const point = response.getPoint()
     if (!point) {
-        console.error("Can't determine point of node: " + next)
+        Logger.error("Can't determine point of node: " + next)
         return flightPlan
     }
     const currentAirplanePoint = airplane.getPoint()
     if (!currentAirplanePoint) {
-        console.error("Can't determine point of airplane: " + airplane)
+        Logger.error("Can't determine point of airplane: " + airplane)
         return flightPlan
     }
     const planeDirection = direction(currentAirplanePoint, point)

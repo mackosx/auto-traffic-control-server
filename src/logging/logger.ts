@@ -45,7 +45,7 @@ export class Logger {
     }
 
     public static info(message: string) {
-        this.log(message, LogColorOption.FgCyan)
+        this.log(`[INFO] ${message}`, LogColorOption.FgCyan)
     }
 
     public static success(message: string) {
@@ -53,6 +53,10 @@ export class Logger {
     }
 
     public static error(message: string) {
-        console.error(LogColorOption.FgRed, message, LogColorOption.Reset)
+        console.error(
+            LogColorOption.FgRed,
+            `[ERROR] ${message}`,
+            LogColorOption.Reset,
+        )
     }
 }

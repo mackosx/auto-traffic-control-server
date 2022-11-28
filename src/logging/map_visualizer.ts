@@ -10,8 +10,8 @@ export class MapVisualizer {
         const restrictedNodes = map
             .getRoutingGridList()
             .filter((node) => node.getRestricted())
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
+        for (let y = height - 1; y >= 0; y--) {
+            for (let x = 0; x < width; x++) {
                 const index = flightPlan.findIndex((node) => {
                     const coordinates = getStandardizedCoordinates(
                         map,
@@ -37,7 +37,7 @@ export class MapVisualizer {
                     return x === coordinates.x && y === coordinates.y
                 })
                 if (restrictedIndex > -1) {
-                    process.stdout.write('    ')
+                    MapVisualizer.invalid()
                 } else if (airportIndex > -1) {
                     MapVisualizer.airport()
                 } else if (index > -1) {
@@ -50,22 +50,26 @@ export class MapVisualizer {
         }
     }
 
-    private static airport() {
-        Logger.write('  A ', LogColorOption.FgRed)
+    public static airport() {
+        Logger.write(' A', LogColorOption.FgRed)
     }
 
-    private static path(index: number) {
+    public static path(index: number) {
         Logger.write(
-            ` ${(index + 1).toString().padStart(2, ' ')} `,
+            `${(index + 1).toString().padStart(2, ' ')}`,
             LogColorOption.FgGreen,
         )
     }
 
-    private static empty() {
-        Logger.write('  * ', LogColorOption.Dim)
+    public static empty() {
+        Logger.write(' •', LogColorOption.Dim)
     }
 
-    private static endRow() {
-        Logger.write('\n\n')
+    public static endRow() {
+        Logger.write('\n')
+    }
+
+    public static invalid() {
+        Logger.write('  ')
     }
 }
