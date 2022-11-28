@@ -1,4 +1,5 @@
 import { Node, Map } from 'auto-traffic-control'
+import { Logger } from './logging/logger'
 import { Queue } from './queue'
 import { Direction, range, unitMove, getNodeAt } from './util'
 
@@ -40,8 +41,6 @@ export function getNeighbours(node: Node, map: Map): Node[] {
             }
         })
     })
-
-    // console.log("Neighbours " + neighbours);
     return neighbours
 }
 
@@ -57,10 +56,10 @@ export function bfs(
     getNeighbours: (node: Node) => Node[],
 ): Node[] {
     if (start.toString() === goal.toString()) {
-        console.warn('Start is goal.')
+        Logger.error('Start is goal.')
         return []
     }
-    console.log('Goal is ' + goal)
+    Logger.info('Goal is ' + goal)
     const visited = new Set<Node>()
     const queue = new Queue<Node[]>()
     queue.enqueue([start])
@@ -84,6 +83,6 @@ export function bfs(
             }
         }
     }
-    console.error('No path to goal found.')
+    Logger.error('No path to goal found.')
     return [start]
 }
